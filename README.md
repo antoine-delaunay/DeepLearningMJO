@@ -48,7 +48,6 @@ The repository is organised as follows:
 
 		- AnalysisCNN.py
 		- AnalysisDynamical.py
-		- CompareFeatures.py
 		- PreproprocessingDynamical.py
 		- PlotLogScoreEDP.py
 		- PlotSpreadDiagram.py
