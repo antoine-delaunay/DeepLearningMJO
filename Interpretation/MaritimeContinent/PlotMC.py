@@ -14,7 +14,6 @@ import sys
 sys.path.append('../../CNN/')
 from Dataset import MJODataset
 
-#mpl.rcParams['font.size'] = 7
 mpl.rcParams['mathtext.default'] = 'regular'
 
 PLOT_DIAGRAM = True
@@ -23,7 +22,8 @@ idx1 = 9797
 idx2 = 132
 
 n_days = 10
-levels_signal = np.linspace(0.0,0.6,10)
+levels_signal_anoms = np.linspace(-0.15,0.15,10)
+levels_signal_means = np.linspace(0.0,0.6,10)
 levels_means = [np.linspace(-36,36,10), np.linspace(-13,13,10), np.linspace(-70,70,10), np.linspace(-3.4,3.4,10), 
                 np.linspace(0,0.0026,10), np.linspace(13577,15434,10), np.linspace(1e+6,1.59e+6,10)]
 
@@ -37,7 +37,7 @@ lon = np.linspace(-180, 180, 144)
 lat = np.linspace(-20, 20, 17)
 lon2d, lat2d = np.meshgrid(lon, lat)
 
-def PlotMaps(XM1, XM2, SM1_1, SM1_2, SM2_1, SM2_2, phase, feature_idx, levels_means, levels_signal):
+def PlotMaps(XM1, XM2, SM_1, SM_2, SA_1, SA_2, rmm, phase, feature_idx):
     '''
     Plot composite and signal maps associated with the forecasts of all days starting in the given phase
     '''
@@ -51,8 +51,8 @@ def PlotMaps(XM1, XM2, SM1_1, SM1_2, SM2_1, SM2_2, phase, feature_idx, levels_me
     else:
         cmap_mean = 'RdYlBu_r'
 
-    fig = plt.figure(figsize=(12,5), constrained_layout=True)
-    gs = gridspec.GridSpec(5, 2, figure=fig, height_ratios=[1, 0.1, 1, 1, 0.1])
+    fig = plt.figure(figsize=(12.4,5.5), constrained_layout=True)
+    gs = gridspec.GridSpec(6, 2, figure=fig, height_ratios=[1, 0.1, 1, 0.1, 1, 0.1])
     
     ax00 = fig.add_subplot(gs[0, 0], projection= ccrs.PlateCarree(central_longitude=180)) 
     ax00.set_xticks([-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150])
@@ -80,7 +80,7 @@ def PlotMaps(XM1, XM2, SM1_1, SM1_2, SM2_1, SM2_2, phase, feature_idx, levels_me
     ax20.set_xticklabels(['30°E', '60°E', '90°E', '120°E', '150°E', '180°E', '150°W', '120°W', '90°W', '60°W', '30°W'])
     ax20.tick_params(bottom=False)
     ax20.set_title(r"\textbf{c. }", loc = 'left')
-    im20 = ax20.contourf(lon2d, lat2d, SM1_1[phase, feature_idx], cmap='RdYlBu_r', levels = levels_signal, extend = 'max')
+    im20 = ax20.contourf(lon2d, lat2d, SM_1[phase], cmap='RdYlBu_r', levels = levels_signal_means, extend = 'max')
     
     ax21 = fig.add_subplot(gs[2, 1], projection = ccrs.PlateCarree(central_longitude=180))
     ax21.coastlines()
@@ -88,34 +88,38 @@ def PlotMaps(XM1, XM2, SM1_1, SM1_2, SM2_1, SM2_2, phase, feature_idx, levels_me
     ax21.set_xticklabels(['30°E', '60°E', '90°E', '120°E', '150°E', '180°E', '150°W', '120°W', '90°W', '60°W', '30°W'])
     ax21.tick_params(bottom=False)
     ax21.set_title(r"\textbf{d. }", loc = 'left')    
-    im21 = ax21.contourf(lon2d, lat2d, SM1_2[phase, feature_idx], cmap='RdYlBu_r', levels = levels_signal, extend = 'max')
+    im21 = ax21.contourf(lon2d, lat2d, SM_2[phase], cmap='RdYlBu_r', levels = levels_signal_means, extend = 'max')
+
+    ax3 = fig.add_subplot(gs[3, :], visible=False)
+    cb3 = fig.colorbar(im21, ax = ax3, shrink = 0.5, pad = -0.2, orientation = 'horizontal')
+    cb3.ax.set_title("Arbitrary unit")
     
-    ax30 = fig.add_subplot(gs[3, 0], projection = ccrs.PlateCarree(central_longitude=180))
-    ax30.coastlines()
-    ax30.set_xticks([-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150])
-    ax30.set_xticklabels(['30°E', '60°E', '90°E', '120°E', '150°E', '180°E', '150°W', '120°W', '90°W', '60°W', '30°W'])
-    ax30.tick_params(bottom=False)
-    ax30.set_title(r"\textbf{e. }", loc = 'left')    
-    im30 = ax30.contourf(lon2d, lat2d, SM2_1[phase, feature_idx], cmap='RdYlBu_r', levels = levels_signal, extend = 'max')
+    ax40 = fig.add_subplot(gs[4, 0], projection = ccrs.PlateCarree(central_longitude=180))
+    ax40.coastlines()
+    ax40.set_xticks([-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150])
+    ax40.set_xticklabels(['30°E', '60°E', '90°E', '120°E', '150°E', '180°E', '150°W', '120°W', '90°W', '60°W', '30°W'])
+    ax40.tick_params(bottom=False)
+    ax40.set_title(r"\textbf{e. }", loc = 'left')    
+    im40 = ax40.contourf(lon2d, lat2d, SA_1[phase, feature_idx], cmap='RdYlBu_r', levels = levels_signal_anoms, extend = 'both')
     
-    ax31 = fig.add_subplot(gs[3, 1], projection = ccrs.PlateCarree(central_longitude=180))
-    ax31.coastlines()
-    ax31.set_xticks([-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150])
-    ax31.set_xticklabels(['30°E', '60°E', '90°E', '120°E', '150°E', '180°E', '150°W', '120°W', '90°W', '60°W', '30°W'])
-    ax31.tick_params(bottom=False)
-    ax31.set_title(r"\textbf{f. }", loc = 'left')    
-    im31 = ax31.contourf(lon2d, lat2d, SM2_2[phase, feature_idx], cmap='RdYlBu_r', levels = levels_signal, extend = 'max')
+    ax41 = fig.add_subplot(gs[4, 1], projection = ccrs.PlateCarree(central_longitude=180))
+    ax41.coastlines()
+    ax41.set_xticks([-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150])
+    ax41.set_xticklabels(['30°E', '60°E', '90°E', '120°E', '150°E', '180°E', '150°W', '120°W', '90°W', '60°W', '30°W'])
+    ax41.tick_params(bottom=False)
+    ax41.set_title(r"\textbf{f. }", loc = 'left')    
+    im41 = ax41.contourf(lon2d, lat2d, SA_2[phase, feature_idx], cmap='RdYlBu_r', levels = levels_signal_anoms, extend = 'both')
     
-    ax4 = fig.add_subplot(gs[4, :], visible=False)
-    cb4 = fig.colorbar(im31, ax = ax4, shrink = 0.5, pad = -0.2, orientation = 'horizontal')
-    cb4.ax.set_title("Arbitrary unit")
+    ax5 = fig.add_subplot(gs[5, :], visible=False)
+    cb5 = fig.colorbar(im41, ax = ax5, shrink = 0.5, pad = -0.2, orientation = 'horizontal')
+    cb5.ax.set_title("Arbitrary unit")
     
     if feature_idx >=4: #Write the color bar numbers in scientific writing when necessary
         cb1.formatter.set_powerlimits((0, 2))
         cb1.update_ticks()
 
     fig.suptitle('', fontsize = 10)
-    fig.savefig(PlotDir + feature + '_MC_'+str(phase+1)+'_Propa_Decaying.png')
+    fig.savefig(PlotDir + feature + '_MC_'+str(phase+1)+'_RMM'+str(rmm)+'_Propa_Decaying.png')
     plt.close()
     return
 
@@ -201,9 +205,14 @@ if __name__ == '__main__':
 
     #COMPUTE COMPOSITE AND SIGNAL MAPS
     print('Compute composite and signal maps')
+    
+    #SM1_2 : signal mean for first event and RMM2
     XM1,XM2 = np.zeros((8,7,17,144)), np.zeros((8,7,17,144))
-    SM1_1,SM1_2 = np.zeros((8,7,17,144)),np.zeros((8,7,17,144))
-    SM2_1,SM2_2 = np.zeros((8,7,17,144)),np.zeros((8,7,17,144))
+    SM1_1,SM1_2 = np.zeros((8,17,144)),np.zeros((8,17,144))
+    SM2_1,SM2_2 = np.zeros((8,17,144)),np.zeros((8,17,144))
+    SA1_1,SA1_2 = np.zeros((8,7,17,144)),np.zeros((8,7,17,144))
+    SA2_1,SA2_2 = np.zeros((8,7,17,144)),np.zeros((8,7,17,144))
+
 
     for i in range(8):
         idx_ph1 = np.where(phase1==i+1)[0]
@@ -212,18 +221,30 @@ if __name__ == '__main__':
         XM1[i,:,:,:] = X1[idx_ph1].mean(axis=0)
         XM2[i,:,:,:] = X2[idx_ph2].mean(axis=0)
        
-        SM1_1[i,:,:,:] = S1_1[idx_ph1].mean(axis=0)
-        SM2_1[i,:,:,:] = S2_1[idx_ph1].mean(axis=0)
+        SM1_1[i,:,:] = S1_1[idx_ph1].mean(axis=0).mean(axis=0)
+        SM2_1[i,:,:] = S2_1[idx_ph1].mean(axis=0).mean(axis=0)
 
-        SM1_2[i,:,:,:] = S1_2[idx_ph2].mean(axis=0)
-        SM2_2[i,:,:,:] = S2_2[idx_ph2].mean(axis=0)
+        SM1_2[i,:,:] = S1_2[idx_ph2].mean(axis=0).mean(axis=0)
+        SM2_2[i,:,:] = S2_2[idx_ph2].mean(axis=0).mean(axis=0)
+        
+        SA1_1[i,:,:,:] = S1_1[idx_ph1].mean(axis=0) - S1_1[idx_ph1].mean(axis=0).mean(axis=0)
+        SA2_1[i,:,:,:] = S2_1[idx_ph1].mean(axis=0) - S2_1[idx_ph1].mean(axis=0).mean(axis=0)
+
+        SA1_2[i,:,:,:] = S1_2[idx_ph2].mean(axis=0) - S1_2[idx_ph2].mean(axis=0).mean(axis=0)
+        SA2_2[i,:,:,:] = S2_2[idx_ph2].mean(axis=0) - S2_2[idx_ph2].mean(axis=0).mean(axis=0)
+
 
     #PLOT COMPOSITE MAPS
     print('Plot composite maps')
     
-    PlotMaps(XM1, XM2, SM1_1, SM1_2, SM2_1, SM2_2, 2, 1, levels_means, levels_signal)
-    PlotMaps(XM1, XM2, SM1_1, SM1_2, SM2_1, SM2_2, 2, 2, levels_means, levels_signal)
-    PlotMaps(XM1, XM2, SM1_1, SM1_2, SM2_1, SM2_2, 2, 4, levels_means, levels_signal)
+    #phase = 2 because indexed from 0 to 7 in numpy
+    # same issue for feature_idx
+    PlotMaps(XM1, XM2, SM1_1, SM1_2, SA1_1, SA1_2, rmm = 1, phase = 2, feature_idx = 2)
+    PlotMaps(XM1, XM2, SM2_1, SM2_2, SA2_1, SA2_2, rmm = 2, phase = 2, feature_idx = 2)
+    
+    PlotMaps(XM1, XM2, SM1_1, SM1_2, SA1_1, SA1_2, rmm = 1, phase = 2, feature_idx = 4)
+    PlotMaps(XM1, XM2, SM2_1, SM2_2, SA2_1, SA2_2, rmm = 2, phase = 2, feature_idx = 4)
+    
     
     if PLOT_DIAGRAM == True:
         '''
