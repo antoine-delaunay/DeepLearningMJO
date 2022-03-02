@@ -6,6 +6,7 @@ from tqdm import tqdm
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
+from properscoring import crps_gaussian
 
 import sys
 sys.path.append('../CNN/')
@@ -25,8 +26,37 @@ seeds = [20*i for i in range(n_members)]
 T_OUTPUTS = [1,3,5,10,15,20,25,30,35]
 n_bins = 5 #Number of bins for the RMS Error / Spread diagram
 
+
+def RMSE(mu, targets):
+    '''Compute the RMSE'''
+    return torch.sqrt(((mu[:,0] -targets[:,0])**2 + (mu[:,1]-targets[:,1])**2).mean(dim=0))
+
+def BivariateCorrelation(preds, targets):
+    '''Compute the Bivariate Correlation'''
+    num = (torch.mul(preds[:,0], targets[:,0]) + torch.mul(preds[:,1], targets[:,1])).sum()
+    denom1 = (torch.norm(preds, dim = 1).square().sum()).sqrt()
+    denom2 = (torch.norm(targets, dim = 1).square().sum()).sqrt()
+    return num/(denom1*denom2)
+
+def Amplitude(x):
+    return torch.norm(x, dim = 1)
+
+def AmpError(mu, targets):
+    '''Compute the amplitude error'''
+    return (Amplitude(mu) - Amplitude(targets)).mean(dim =0)
+    
+def PhaseError(mu, targets):
+    '''Compute the phase error'''
+    num = (torch.mul(targets[:,0],mu[:,1]) - torch.mul(targets[:,1], mu[:,0]))
+    denom = (torch.mul(mu[:,0], mu[:,0]) + torch.mul(mu[:,1], mu[:,1]))
+    return torch.atan(num/denom).mean(dim = 0)*180.0/np.pi
+
+def CRPS(mu, cov, targets):
+    '''Compute the CRPS'''
+    return np.array([crps_gaussian(targets[i,0], mu=mu[i,0], sig = cov[i,0,0].sqrt()) + crps_gaussian(targets[i,1], mu=mu[i,1], sig = cov[i,1,1].sqrt()) for i in range(targets.shape[0])]).mean()
+    
 def LogScore(mu, cov, targets):
-    '''Compute the Log-score'''
+    '''Compute the Log-score/Ignorance-score'''
     dist = MultivariateNormal(mu, covariance_matrix = cov)
     loss = -(dist.log_prob(targets)).mean()
     return loss
@@ -250,7 +280,7 @@ def main():
     '''
     For each lead time, compute the log-score, the RMSE/Spread bins, and the Error-Drop
     '''
-    results = torch.zeros((len(T_OUTPUTS), 2))
+    results = torch.zeros((len(T_OUTPUTS), 7))
     
     for i, T_OUTPUT in tqdm(enumerate(T_OUTPUTS)):
         
@@ -275,14 +305,19 @@ def main():
         spread_aleatoric = spread_aleatoric.numpy()
         spread_total = spread_total.numpy()
         
-        #Compute the Log-score, the Error Drop, and the bins  
-        results[i,0] = LogScore(mu, cov_matrix, targets.type(torch.FloatTensor))
-        results[i,1] = ErrorDrop(mu, targets, spread_epistemic, spread_aleatoric, spread_total, T_OUTPUT)
+        #Compute the metrics and the bins  
+        results[i,0] = RMSE(mu, targets)
+        results[i,1] = BivariateCorrelation(mu, targets)
+        results[i,2] = AmpError(mu, targets)
+        results[i,3] = PhaseError(mu, targets)
+        results[i,4] = CRPS(mu, cov_matrix, targets)
+        results[i,5] = LogScore(mu, cov_matrix, targets.type(torch.FloatTensor))
+        results[i,6] = ErrorDrop(mu, targets, spread_epistemic, spread_aleatoric, spread_total, T_OUTPUT)
         RmseSpread(mu, targets, spread_epistemic, spread_aleatoric, spread_total, T_OUTPUT)
  
     #Save the results in a dataframe            
     df = pd.DataFrame(results.numpy())
-    df.columns =['Log Score', 'Error Drop']
+    df.columns = ['RMSE', 'Bivariate Correlation','Amplitude Error', 'Phase Error', 'CRPS', 'Log Score', 'Error Drop']
     df.to_csv(ResultsDir + 'Results_CNN.txt', index = False)
     print(df.head())
     

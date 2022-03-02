@@ -6,6 +6,9 @@ rc('text', usetex=True)
 import matplotlib.pyplot as plt
 from matplotlib import collections  as mc
 
+
+mpl.rcParams['mathtext.default'] = 'regular'
+mpl.rcParams['font.size'] = 12
 models = ['ECMWF', 'HMCR', 'CNRM', 'BOM']
 model_markers = ['x','^','o','v']
 model_colors = ['blue', 'olive', 'green', 'red']
@@ -37,17 +40,17 @@ ax[0].legend(['ECMWF', 'HMCR', 'CNRM', 'BOM','CNN - aleatoric', 'CNN - total'])
 ax[0].plot(np.linspace(0.0,1.2,1000), np.linspace(0.0,1.2,1000), color='black', linestyle='--')
 ax[0].set_xlim((0.0,1.15))
 ax[0].set_ylim((0.0,1.15))
-ax[0].set_xlabel('RMS Spread')
-ax[0].set_ylabel('RMS Error')
+ax[0].set_xlabel('RMS Spread', fontsize = 12)
+ax[0].set_ylabel('RMS Error', fontsize = 12)
 ax[0].set_title(r'\textbf{a.} RMM1')#)RMS Error / Spread diagram - RMM1 - '+ str(T_OUTPUT) + ' days forecast')
 
 ax[1].legend(['ECMWF', 'HMCR', 'CNRM', 'BOM','CNN - aleatoric', 'CNN - total'])
 ax[1].plot(np.linspace(0.0,1.2,1000), np.linspace(0.0,1.2,1000), color='black', linestyle='--')
 ax[1].set_xlim((0.0,1.15))
 ax[1].set_ylim((0.0,1.15))
-ax[1].set_xlabel('RMS Spread')
-ax[1].set_ylabel('RMS Error')
+ax[1].set_xlabel('RMS Spread', fontsize = 12)
+ax[1].set_ylabel('RMS Error', fontsize = 12)
 ax[1].set_title(r'\textbf{b.} RMM2')#)RMS Error / Spread diagram - RMM1 - '+ str(T_OUTPUT) + ' days forecast')
 
-fig.savefig(PlotsDir+'rmspread_error_'+str(T_OUTPUT)+'.png', bbox_inches='tight')
+plt.savefig(PlotsDir+'rmspread_error_'+str(T_OUTPUT)+'.png', bbox_inches='tight')
 plt.close()
