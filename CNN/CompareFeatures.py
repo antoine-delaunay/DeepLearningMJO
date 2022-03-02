@@ -29,7 +29,7 @@ def LogScore(mu, cov, targets):
     return loss
  
 #Compute the forecasts and the loss for the test sets on all the different combinations of variables
- 
+
 for i, feature in enumerate(features):
     print(feature)
     test_dataloader = torch.load(DataDir+'Test_'+feature + '_'+ str(T_OUTPUT)+'.pt')
@@ -66,11 +66,13 @@ for i, feature in enumerate(features):
     
 torch.save(results, ResultsDir + 'CompareFeatures_' + str(T_OUTPUT) + '.pt')
 
+
+results = torch.load(ResultsDir + 'CompareFeatures_' + str(T_OUTPUT) + '.pt')
 #Plot the results
 plt.figure()
-plt.barh(features_names_plot, results)
+plt.barh(features_names_plot, results, color = ['blue', 'red', 'mediumorchid', 'Orange', 'Grey', 'Green'])
 plt.xlim(2.0,2.4)
-plt.xlabel('Log-Score')
+plt.xlabel('Ignorance-Score')
 plt.ylabel('Features')
 plt.title('Comparison of the features')
 plt.tight_layout(pad=0.4)
