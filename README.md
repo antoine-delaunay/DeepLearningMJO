@@ -1,15 +1,14 @@
 # Interpretable Deep Learning for Probabilistic MJO Prediction
 
-This repository contains the code used for the paper "Interpretable Deep Learning for Probabilistic MJO Prediction" by A. Delaunay and H. M. Christensen (2021).
+This repository contains the code used for the paper "Interpretable Deep Learning for Probabilistic MJO Prediction" by A. Delaunay and H. M. Christensen (2022).
 
 ## Abstract
 <p align="justify">
-<strong>The Madden–Julian Oscillation (MJO) is the dominant source of sub-seasonal variability in the tropics.</strong> It consists of an Eastward moving region of enhanced convective storms coupled to changes in zonal winds at the surface and aloft. The chaotic nature of the Earth System means that it is not possible to predict the precise evolution of the MJO beyond a few days, so subseasonal forecasts must be probabilistic.</p>
-<p align="justify">  
-The forecast probability distribution should vary from day to day, depending on the instantaneous predictability of the MJO. Operational dynamical subseasonal forecasting models do not have this important property. <strong>Here we show that a statistical model trained using deep-learning can produce skilful state-dependent probabilistic forecasts of the MJO. The statistical model explicitly accounts for intrinsic chaotic uncertainty by predicting the standard deviation about the mean, and model uncertainty using a Monte-Carlo dropout approach.</strong></p>
-<p align="justify">
-Interpretation of the mean forecasts from the statistical model highlights known MJO mechanisms, providing confidence in the model. <strong>Interpretation of the predicted uncertainty identifies new physical mechanisms governing MJO predictability</strong>. In particular, we find the background state of the Walker Circulation is key for MJO propagation, and not underlying Sea Surface Temperatures as previously assumed.</p>
-</p>
+The Madden–Julian Oscillation (MJO) is the dominant source of sub-seasonal variability in the tropics. It consists of an Eastward moving region of enhanced convection coupled to changes in zonal winds. It is not possible to predict the precise evolution of the MJO, so sub-seasonal forecasts are generally probabilistic.</p>
+<p align='justify'>
+We present a deep convolutional neural network (CNN) that produces skilful state-dependent probabilistic MJO forecasts. Importantly, the CNN’s forecast uncertainty varies depending on the instantaneous predictability of the MJO. The CNN accounts for intrinsic chaotic uncertainty by predicting the standard deviation about the mean, and model uncertainty using Monte-Carlo dropout. </p>
+<p align ='justify'>
+Interpretation of the CNN mean forecasts highlights known MJO mechanisms, providing confidence in the model. Interpretation of forecast uncertainty indicates mechanisms governing MJO predictability. In particular, we find an initially stronger MJO signal is associated with more uncertainty, and that MJO predictability is affected by the state of the Walker Circulation.</p>
 
 ## Disclaimer
 This code is not suitable for a use on a conventional laptop (e.g. memory or CPU capacity). The authors decline any responsibility associated with the use of this repository.
@@ -44,12 +43,12 @@ The repository is organised as follows:
 		- CompareFeatures.py 
 		
 - Analysis
-> <p align="justify">The <strong><i>Analysis</i></strong> folder contains the necessary files to preprocess the S2S reforecasts ".txt" files to obtain a forecast dataframe for each lead time, to compute and compare (Log-score and Error-drop) the CNN and dynamical models. PreprocessingDynamical and AnalysisDynamical must be run once per model to obtain the scores of each model. Then PlotLogScoreEDP and PlotSpreadDiagram plots all the scores on a common plot.</p>
+> <p align="justify">The <strong><i>Analysis</i></strong> folder contains the necessary files to preprocess the S2S reforecasts ".txt" files to obtain a forecast dataframe for each lead time, to compute and compare (Log-score and Error-drop) the CNN and dynamical models. PreprocessingDynamical and AnalysisDynamical must be run once per model to obtain the scores of each model. Then PlotMetrics and PlotSpreadDiagram plots all the scores on a common plot.</p>
 
 		- AnalysisCNN.py
 		- AnalysisDynamical.py
 		- PreproprocessingDynamical.py
-		- PlotLogScoreEDP.py
+		- PlotMetrics.py
 		- PlotSpreadDiagram.py
 - Interpretation
 >  <p align="justify">The <strong><i>Interpretation</i></strong>  folder contains the necessary files to interpret the network's behaviour and the predictability of the forecasts. The signals can be computed by running Train followed by ComputeSignal. The Maritime Continent, Predictability and SignalMeans plots can be run with the associated files but AnalysisCNN must have been run beforehand. </p>
